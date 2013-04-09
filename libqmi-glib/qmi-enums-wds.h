@@ -38,6 +38,123 @@
 #include <glib.h>
 
 /*****************************************************************************/
+/* Helper enums for the 'QMI WDS Set Event Report' message */
+
+/**
+ * QmiWdsSetEventReportRequestedTransferStatistics:
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_NONE: no settings requested
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKET_SUCCESS: report TX packet success
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKET_SUCCESS: report RX packet success
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKET_ERRORS: report TX packet errors
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKET_ERRORS: report RX packet errors
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_OVERFLOWS: report TX overflows
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_OVERFLOWS: report RX overflows
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_BYTE_TOTAL: report TX byte totals
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_BYTE_TOTAL: report RX byte totals
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKETS_DROPPED: report TX packets dropped
+ * @QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKETS_DROPPED: report RX packets dropped
+ *
+ * Flags specifying which TX/RX related statistics to report for WDS event
+ * indications.
+ */
+typedef enum { /*< underscore_name=qmi_wds_set_event_report_requested_transfer_statistics >*/
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_NONE               = 0,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKET_SUCCESS  = 1 << 0,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKET_SUCCESS  = 1 << 1,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKET_ERRORS   = 1 << 2,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKET_ERRORS   = 1 << 3,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_OVERFLOWS       = 1 << 4,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_OVERFLOWS       = 1 << 5,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_BYTE_TOTAL      = 1 << 6,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_BYTE_TOTAL      = 1 << 7,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKETS_DROPPED = 1 << 8,
+    QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKETS_DROPPED = 1 << 9,
+} QmiWdsSetEventReportRequestedTransferStatistics;
+
+/*****************************************************************************/
+/* Helper enums for the 'QMI WDS Event Indication' message */
+
+/**
+ * QmiWdsDormancyStatus:
+ * @QMI_WDS_DORMANCY_STATUS_UNKNOWN: status unknown
+ * @QMI_WDS_DORMANCY_STATUS_TRAFFIC_CHANNEL_DORMANT: traffic channel is dormant
+ * @QMI_WDS_DORMANCY_STATUS_TRAFFIC_CHANNEL_ACTIVE: traffic channel is active
+ *
+ * Enum specifying dormancy status of the traffic channel.
+ */
+typedef enum { /*< underscore_name=qmi_wds_dormancy_status >*/
+    QMI_WDS_DORMANCY_STATUS_UNKNOWN                 = 0,
+    QMI_WDS_DORMANCY_STATUS_TRAFFIC_CHANNEL_DORMANT = 1,
+    QMI_WDS_DORMANCY_STATUS_TRAFFIC_CHANNEL_ACTIVE  = 2,
+} QmiWdsDormancyStatus;
+
+/**
+ * QmiWdsDataCallStatus:
+ * @QMI_WDS_DATA_CALL_STATUS_UNKNOWN: status unknown
+ * @QMI_WDS_DATA_CALL_STATUS_ACTIVATED: data call activated
+ * @QMI_WDS_DATA_CALL_STATUS_FAILED: data call failed
+ *
+ * Enum specifying status of a data call.
+ */
+typedef enum { /*< underscore_name=qmi_wds_data_call_status >*/
+    QMI_WDS_DATA_CALL_STATUS_UNKNOWN                 = 0,
+    QMI_WDS_DATA_CALL_STATUS_TRAFFIC_CHANNEL_DORMANT = 1,
+    QMI_WDS_DATA_CALL_STATUS_TRAFFIC_CHANNEL_ACTIVE  = 2,
+} QmiWdsDataCallStatus;
+
+/**
+ * QmiWdsDataCallSystem
+ * @QMI_WDS_DATA_CALL_SYSTEM_UNKNOWN: unknown data call system
+ * @QMI_WDS_DATA_CALL_SYSTEM_CDMA_1X: CDMA 1x
+ * @QMI_WDS_DATA_CALL_SYSTEM_CDMA_1X_EVDO: CDMA 1x EVDO
+ * @QMI_WDS_DATA_CALL_SYSTEM_GRPS: GPRS
+ * @QMI_WDS_DATA_CALL_SYSTEM_WCDMA: WCDMA
+ * @QMI_WDS_DATA_CALL_SYSTEM_LTE: LTE
+ * @QMI_WDS_DATA_CALL_SYSTEM_TD_SCDMA: TD-SCDMA
+ *
+ * Enum specifying data call systems.
+ */
+typedef enum { /*< underscore_name=qmi_wds_data_call_system >*/
+    QMI_WDS_DATA_CALL_SYSTEM_UNKNOWN      = 0,
+    QMI_WDS_DATA_CALL_SYSTEM_CDMA_1X      = 1,
+    QMI_WDS_DATA_CALL_SYSTEM_CDMA_1X_EVDO = 2,
+    QMI_WDS_DATA_CALL_SYSTEM_GRPS         = 3,
+    QMI_WDS_DATA_CALL_SYSTEM_WCDMA        = 4,
+    QMI_WDS_DATA_CALL_SYSTEM_LTE          = 5,
+    QMI_WDS_DATA_CALL_SYSTEM_TD_SCDMA     = 6,
+} QmiWdsDataCallSystem;
+
+/**
+ * QmiWdsDataCallType:
+ * @QMI_WDS_DATA_CALL_TYPE_UNKNOWN: unknown
+ * @QMI_WDS_DATA_CALL_TYPE_EMBEDDED: embedded
+ * @QMI_WDS_DATA_CALL_TYPE_TETHERED: tethered
+ * @QMI_WDS_DATA_CALL_TYPE_MODEM_EMEDDED: modem embedded
+ *
+ * Enum specifying the type of a data call.
+ */
+typedef enum { /*< underscore_name=qmi_wds_data_call_type >*/
+    QMI_WDS_DATA_CALL_TYPE_UNKNOWN         = 0,
+    QMI_WDS_DATA_CALL_TYPE_EMBEDDED        = 1,
+    QMI_WDS_DATA_CALL_TYPE_TETHERED        = 2,
+    QMI_WDS_DATA_CALL_TYPE_MODEM_EMBEDDED  = 3,
+} QmiWdsDataCallType;
+
+/**
+ * QmiWdsTetheredCallType:
+ * @QMI_WDS_TETHERED_CALL_TYPE_NON_TETHERED: not tethered
+ * @QMI_WDS_TETHERED_CALL_TYPE_RMNET: tethered RMNET
+ * @QMI_WDS_TETHERED_CALL_TYPE_DUN: tethered DUN
+ *
+ * Enum specifying the type of a tethered data call.
+ */
+typedef enum { /*< underscore_name=qmi_wds_tethered_call_type >*/
+    QMI_WDS_TETHERED_CALL_TYPE_UNKNOWN  = 0,
+    QMI_WDS_TETHERED_CALL_TYPE_EMBEDDED = 1,
+    QMI_WDS_TETHERED_CALL_TYPE_TETHERED = 2,
+} QmiWdsTetheredCallType;
+
+/*****************************************************************************/
 /* Helper enums for the 'QMI WDS Start Network' message */
 
 /**
