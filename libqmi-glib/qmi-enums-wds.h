@@ -57,7 +57,7 @@
  * Flags specifying which TX/RX related statistics to report for WDS event
  * indications.
  */
-typedef enum { /*< underscore_name=qmi_wds_set_event_report_requested_transfer_statistics >*/
+typedef enum {
     QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_NONE               = 0,
     QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_TX_PACKET_SUCCESS  = 1 << 0,
     QMI_WDS_SET_EVENT_REPORT_REQUESTED_TRANSFER_STATISTICS_RX_PACKET_SUCCESS  = 1 << 1,
@@ -82,7 +82,7 @@ typedef enum { /*< underscore_name=qmi_wds_set_event_report_requested_transfer_s
  *
  * Enum specifying dormancy status of the traffic channel.
  */
-typedef enum { /*< underscore_name=qmi_wds_dormancy_status >*/
+typedef enum {
     QMI_WDS_DORMANCY_STATUS_UNKNOWN                 = 0,
     QMI_WDS_DORMANCY_STATUS_TRAFFIC_CHANNEL_DORMANT = 1,
     QMI_WDS_DORMANCY_STATUS_TRAFFIC_CHANNEL_ACTIVE  = 2,
@@ -96,7 +96,7 @@ typedef enum { /*< underscore_name=qmi_wds_dormancy_status >*/
  *
  * Enum specifying status of a data call.
  */
-typedef enum { /*< underscore_name=qmi_wds_data_call_status >*/
+typedef enum {
     QMI_WDS_DATA_CALL_STATUS_UNKNOWN                 = 0,
     QMI_WDS_DATA_CALL_STATUS_TRAFFIC_CHANNEL_DORMANT = 1,
     QMI_WDS_DATA_CALL_STATUS_TRAFFIC_CHANNEL_ACTIVE  = 2,
@@ -114,7 +114,7 @@ typedef enum { /*< underscore_name=qmi_wds_data_call_status >*/
  *
  * Enum specifying data call systems.
  */
-typedef enum { /*< underscore_name=qmi_wds_data_call_system >*/
+typedef enum {
     QMI_WDS_DATA_CALL_SYSTEM_UNKNOWN      = 0,
     QMI_WDS_DATA_CALL_SYSTEM_CDMA_1X      = 1,
     QMI_WDS_DATA_CALL_SYSTEM_CDMA_1X_EVDO = 2,
@@ -133,7 +133,7 @@ typedef enum { /*< underscore_name=qmi_wds_data_call_system >*/
  *
  * Enum specifying the type of a data call.
  */
-typedef enum { /*< underscore_name=qmi_wds_data_call_type >*/
+typedef enum {
     QMI_WDS_DATA_CALL_TYPE_UNKNOWN         = 0,
     QMI_WDS_DATA_CALL_TYPE_EMBEDDED        = 1,
     QMI_WDS_DATA_CALL_TYPE_TETHERED        = 2,
@@ -148,7 +148,7 @@ typedef enum { /*< underscore_name=qmi_wds_data_call_type >*/
  *
  * Enum specifying the type of a tethered data call.
  */
-typedef enum { /*< underscore_name=qmi_wds_tethered_call_type >*/
+typedef enum {
     QMI_WDS_TETHERED_CALL_TYPE_UNKNOWN  = 0,
     QMI_WDS_TETHERED_CALL_TYPE_EMBEDDED = 1,
     QMI_WDS_TETHERED_CALL_TYPE_TETHERED = 2,
