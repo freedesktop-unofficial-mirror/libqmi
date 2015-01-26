@@ -30,6 +30,7 @@
 #include <gio/gunixinputstream.h>
 #include <gio/gunixoutputstream.h>
 #include <gio/gunixsocketaddress.h>
+#include <gudev/gudev.h>
 
 #include "qmi-device.h"
 #include "qmi-message.h"
@@ -71,6 +72,7 @@ enum {
     PROP_FILE,
     PROP_NO_FILE_CHECK,
     PROP_PROXY_PATH,
+    PROP_WWAN_IFACE,
     PROP_LAST
 };
 
@@ -89,6 +91,10 @@ struct _QmiDevicePrivate {
     gchar *path_display;
     gboolean no_file_check;
     gchar *proxy_path;
+
+    /* WWAN interface */
+    gboolean no_wwan_check;
+    gchar *wwan_iface;
 
     /* Implicit CTL client */
     QmiClientCtl *client_ctl;
@@ -593,6 +599,101 @@ qmi_device_is_open (QmiDevice *self)
     g_return_val_if_fail (QMI_IS_DEVICE (self), FALSE);
 
     return !!(self->priv->istream && self->priv->ostream);
+}
+
+/*****************************************************************************/
+/* WWAN iface name */
+
+static void
+load_wwan_iface_name (QmiDevice *self)
+{
+    GUdevClient *udev_client = NULL;
+    GUdevDevice *cdc_wdm_device = NULL;
+    GUdevDevice *cdc_wdm_device_parent = NULL;
+    const gchar *cdc_wdm_device_parent_path;
+    const gchar *cdc_wdm_device_name;
+    GList *list = NULL;
+    GList *l;
+
+    g_assert (!self->priv->wwan_iface);
+
+    cdc_wdm_device_name = strrchr (self->priv->path, '/');
+    if (!cdc_wdm_device_name) {
+        g_warning ("[%s] invalid path for cdc-wdm control port", self->priv->path_display);
+        goto out;
+    }
+    cdc_wdm_device_name++;
+
+    udev_client = g_udev_client_new (NULL);
+
+    cdc_wdm_device = g_udev_client_query_by_subsystem_and_name (udev_client, "usbmisc", cdc_wdm_device_name);
+    if (!cdc_wdm_device) {
+        cdc_wdm_device = g_udev_client_query_by_subsystem_and_name (udev_client, "usb", cdc_wdm_device_name);
+        if (!cdc_wdm_device) {
+            g_warning ("[%s] cannot load udev device for cdc-wdm control port", self->priv->path_display);
+            goto out;
+        }
+    }
+
+    cdc_wdm_device_parent = g_udev_device_get_parent (cdc_wdm_device);
+    if (!cdc_wdm_device_parent) {
+        g_warning ("[%s] cannot load parent udev device for cdc-wdm control port", self->priv->path_display);
+        goto out;
+    }
+    cdc_wdm_device_parent_path = g_udev_device_get_sysfs_path (cdc_wdm_device_parent);
+    if (!cdc_wdm_device_parent_path) {
+        g_warning ("[%s] cannot load parent udev device sysfs path for cdc-wdm control port", self->priv->path_display);
+        goto out;
+    }
+
+    list = g_udev_client_query_by_subsystem (udev_client, "net");
+    for (l = list; l && !self->priv->wwan_iface; l = g_list_next (l)) {
+        GUdevDevice *net_device;
+        GUdevDevice *net_device_parent;
+        const gchar *net_device_parent_path;
+
+        net_device = G_UDEV_DEVICE (l->data);
+        net_device_parent = g_udev_device_get_parent (net_device);
+        if (!net_device_parent)
+            continue;
+
+        net_device_parent_path = g_udev_device_get_sysfs_path (net_device_parent);
+        if (net_device_parent_path && g_str_equal (cdc_wdm_device_parent_path, net_device_parent_path)) {
+            self->priv->wwan_iface = g_strdup (g_udev_device_get_name (net_device));
+            g_debug ("[%s] wwan net interface found: %s (parent %s)", self->priv->path_display, self->priv->wwan_iface, net_device_parent_path);
+        }
+
+        g_object_unref (net_device_parent);
+    }
+
+out:
+    if (list)
+        g_list_free_full (list, (GDestroyNotify) g_object_unref);
+    if (cdc_wdm_device)
+        g_object_unref (cdc_wdm_device);
+    if (cdc_wdm_device_parent)
+        g_object_unref (cdc_wdm_device_parent);
+    if (udev_client)
+        g_object_unref (udev_client);
+}
+
+/**
+ * qmi_device_get_wwan_iface:
+ * @self: a #QmiDevice.
+ *
+ * Get the WWAN interface name associated with this /dev/cdc-wdm control port.
+ * This value will be loaded the first time it's asked for it.
+ *
+ * Returns: UTF-8 encoded network interface name, or %NULL if not available.
+ */
+const gchar *
+qmi_device_get_wwan_iface (QmiDevice *self)
+{
+    g_return_val_if_fail (QMI_IS_DEVICE (self), NULL);
+
+    if (!self->priv->wwan_iface)
+        load_wwan_iface_name (self);
+    return self->priv->wwan_iface;
 }
 
 /*****************************************************************************/
@@ -2492,6 +2593,11 @@ get_property (GObject *object,
     case PROP_FILE:
         g_value_set_object (value, self->priv->file);
         break;
+    case PROP_WWAN_IFACE:
+        if (!self->priv->wwan_iface)
+            load_wwan_iface_name (self);
+        g_value_set_string (value, self->priv->wwan_iface);
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -2637,6 +2743,14 @@ qmi_device_class_init (QmiDeviceClass *klass)
                              QMI_PROXY_SOCKET_PATH,
                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY);
     g_object_class_install_property (object_class, PROP_PROXY_PATH, properties[PROP_PROXY_PATH]);
+
+    properties[PROP_WWAN_IFACE] =
+        g_param_spec_string (QMI_DEVICE_WWAN_IFACE,
+                             "WWAN iface",
+                             "Name of the WWAN network interface associated with the control port.",
+                             NULL,
+                             G_PARAM_READABLE);
+    g_object_class_install_property (object_class, PROP_WWAN_IFACE, properties[PROP_WWAN_IFACE]);
 
     /**
      * QmiClientDms::event-report:
