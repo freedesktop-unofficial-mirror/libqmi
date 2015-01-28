@@ -2673,6 +2673,7 @@ finalize (GObject *object)
     g_free (self->priv->path);
     g_free (self->priv->path_display);
     g_free (self->priv->proxy_path);
+    g_free (self->priv->wwan_iface);
 
     if (self->priv->input_source) {
         g_source_destroy (self->priv->input_source);
